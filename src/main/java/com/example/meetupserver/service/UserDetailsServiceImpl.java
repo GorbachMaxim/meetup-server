@@ -26,6 +26,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return userRepository.findById(id).orElseThrow(RuntimeException::new);
     }
 
+    public User getUserByUsername(String username){
+        return userRepository.findByUsername(username).orElseThrow(RuntimeException::new);
+    }
+
     public List<User> getAllUsers(){
         return userRepository.findAll();
     }

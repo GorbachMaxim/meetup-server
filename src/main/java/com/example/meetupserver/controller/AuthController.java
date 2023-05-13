@@ -11,6 +11,7 @@ import com.example.meetupserver.model.User;
 import com.example.meetupserver.repository.RoleRepository;
 import com.example.meetupserver.repository.UserRepository;
 import com.example.meetupserver.service.UserDetailsImpl;
+import com.example.meetupserver.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,7 +37,9 @@ public class AuthController {
 	
 	@Autowired
 	UserRepository userRepository;
-	
+
+	@Autowired
+	UserDetailsServiceImpl userService;
 	@Autowired
 	RoleRepository roleRepository;
 	
@@ -61,12 +64,9 @@ public class AuthController {
 		List<String> roles = userDetails.getAuthorities().stream()
 				.map(item -> item.getAuthority())
 				.collect(Collectors.toList());
-		
+		User user = userService.getUserByUsername(loginRequest.getUsername());
 		return ResponseEntity.ok(new JwtResponse(jwt,
-				userDetails.getId(), 
-				userDetails.getUsername(), 
-				userDetails.getEmail(), 
-				roles));
+				user));
 	}
 	
 	@PostMapping("/signup")
@@ -133,10 +133,8 @@ public class AuthController {
 				.map(item -> item.getAuthority())
 				.collect(Collectors.toList());
 
+		User user1 = userService.getUserByUsername(signupRequest.getUsername());
 		return ResponseEntity.ok(new JwtResponse(jwt,
-				userDetails.getId(),
-				userDetails.getUsername(),
-				userDetails.getEmail(),
-				roles));
+				user1));
 	}
 }
