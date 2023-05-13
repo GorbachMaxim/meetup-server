@@ -58,7 +58,7 @@ public class MeetupController {
         User user = userService.getUserById(meetup.getAuthor().getId());
         meetup.setAuthor(user);
         meetupService.saveOrUpdate(meetup);
-        return ResponseEntity.ok(new MessageResponse("Meetup CREATED"));
+        return ResponseEntity.ok(new MeetupDTO(meetup));
     }
 
     @PutMapping
@@ -89,7 +89,7 @@ public class MeetupController {
                 meetupForUpdating.setAuthor(user);
 
             meetupService.saveOrUpdate(meetupForUpdating);
-            return ResponseEntity.ok(new MessageResponse("Meetup UPDATED"));
+            return ResponseEntity.ok(new MeetupDTO(meetupForUpdating));
         }
         else {
             return ResponseEntity.badRequest().body(new MessageResponse("Only Author or Chief can change this meetup"));
@@ -107,7 +107,7 @@ public class MeetupController {
         if(user1.getRoles().contains(ERole.ROLE_CHIEF) || (user1.getId() == meetupForDeleting.getAuthor().getId())) {
             meetupService.deleteMeetupById(id);
 
-            return ResponseEntity.ok(new MessageResponse("Meetup DELETED"));
+            return ResponseEntity.ok(new MeetupDTO(meetupForDeleting));
         }
         else {
             return ResponseEntity.badRequest().body(new MessageResponse("Only Author or Chief can delete this meetup"));
