@@ -47,13 +47,19 @@ public class CommentService {
         Comment comment = commentRepository.findById(id).orElseThrow(NullPointerException::new);
         User user2 = comment.getUser();
 
+        News news = newsRepository.findById(comment.getNews().getId()).orElseThrow(NullPointerException::new);
+
         if(Objects.equals(user1.getId(), user2.getId())){
+            news.getComments().remove(comment);
+            newsRepository.save(news);
             commentRepository.deleteById(id);
             return;
         }
 
 
         if(user1.getRoles().contains(ERole.ROLE_CHIEF)) {
+            news.getComments().remove(comment);
+            newsRepository.save(news);
             commentRepository.deleteById(id);
             return;
         }
