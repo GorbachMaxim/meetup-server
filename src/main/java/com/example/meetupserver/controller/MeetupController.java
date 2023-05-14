@@ -2,16 +2,12 @@ package com.example.meetupserver.controller;
 
 import com.example.meetupserver.dto.MessageResponse;
 import com.example.meetupserver.dto.entityDTO.MeetupDTO;
-import com.example.meetupserver.dto.entityDTO.NewsDTO;
-import com.example.meetupserver.dto.entityDTO.UserDTO;
 import com.example.meetupserver.model.ERole;
 import com.example.meetupserver.model.Meetup;
-import com.example.meetupserver.model.News;
 import com.example.meetupserver.model.User;
 import com.example.meetupserver.service.MeetupService;
 import com.example.meetupserver.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -118,22 +114,30 @@ public class MeetupController {
 
     @PostMapping("/{id}/votedusers")
     @PreAuthorize("hasRole('EMPLOYEE') or hasRole('CHIEF')")
-    public ResponseEntity<?> addVotedUser(@PathVariable long id, HttpServletRequest request) {
+    public Set<User> addVotedUser(@PathVariable long id, HttpServletRequest request) {
         User user = userService.getUserFromJWT(request);
         Meetup meetup = meetupService.getMeetupById(id);
         meetup.getVotedUsers().add(user);
         meetupService.saveOrUpdate(meetup);
-        return ResponseEntity.ok(new MessageResponse("VotedUser ADDED"));
+        Set<User> users = meetup.getVotedUsers();
+        users.forEach(user1 -> {
+            user1.setPassword(null);
+        });
+        return users;
     }
 
     @PostMapping("/{id}/participants")
     @PreAuthorize("hasRole('EMPLOYEE') or hasRole('CHIEF')")
-    public ResponseEntity<?> addParticipant(@PathVariable long id, HttpServletRequest request) {
+    public Set<User> addParticipant(@PathVariable long id, HttpServletRequest request) {
         User user = userService.getUserFromJWT(request);
         Meetup meetup = meetupService.getMeetupById(id);
         meetup.getParticipants().add(user);
         meetupService.saveOrUpdate(meetup);
-        return ResponseEntity.ok(new MessageResponse("Participant ADDED"));
+        Set<User> users = meetup.getParticipants();
+        users.forEach(user1 -> {
+            user1.setPassword(null);
+        });
+        return users;
     }
 
     @GetMapping("/{id}/votedusers")

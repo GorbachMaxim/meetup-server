@@ -83,7 +83,7 @@ public class NewsController {
         news1.setTitle(news.getTitle());
         news1.setText(news.getText());
         news1.setImage(news.getImage());
-        news1.setPublicationDate(news.getImage());
+        news1.setPublicationDate(news.getPublicationDate());
 
         if(news.getAuthor() == null)
             news1.setAuthor(news.getAuthor());
