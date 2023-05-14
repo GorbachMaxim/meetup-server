@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -60,21 +61,22 @@ public class EmailController {
     @GetMapping(value = "/notify/{id}")
     @PreAuthorize("hasRole('CHIEF')")
     public @ResponseBody ResponseEntity notify(@PathVariable long id) {
-        List<User> users = userService.getAllUsers();
-        Meetup meetup = meetupService.getMeetupById(id);
 
-        try {
-            for(User user: users){
+        Meetup meetup = meetupService.getMeetupById(id);
+        Set<User> users = meetup.getParticipants();
+
+        for(User user: users){
+            try {
                 emailService.sendSimpleEmail(user.getEmail(), "Напоминание о встрече",
                         "Встреча состоится в " + meetup.getStart() + " по адресу " + meetup.getPlace()
                 );
+            } catch (MailException mailException) {
+                LOG.error("Error while sending out email..{}", mailException.getStackTrace());
             }
-        } catch (MailException mailException) {
-            LOG.error("Error while sending out email..{}", mailException.getStackTrace());
-            return new ResponseEntity<>("Unable to send email", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity<>("All users notified", HttpStatus.OK);
+
+        return new ResponseEntity<>("All participants notified", HttpStatus.OK);
     }
 
     @GetMapping(value = "/{uuid}")
