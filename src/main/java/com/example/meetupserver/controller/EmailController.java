@@ -1,7 +1,9 @@
 package com.example.meetupserver.controller;
 
+import com.example.meetupserver.model.Meetup;
 import com.example.meetupserver.model.User;
 import com.example.meetupserver.service.EmailService;
+import com.example.meetupserver.service.MeetupService;
 import com.example.meetupserver.service.UserDetailsServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -29,6 +32,9 @@ public class EmailController {
 
     @Autowired
     EmailService emailService;
+
+    @Autowired
+    MeetupService meetupService;
 
     @GetMapping(value = "/verification")
     @PreAuthorize("hasRole('EMPLOYEE') or hasRole('CHIEF')")
@@ -49,6 +55,26 @@ public class EmailController {
         }
 
         return new ResponseEntity<>("Please check your inbox", HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/notify/{id}")
+    @PreAuthorize("hasRole('CHIEF')")
+    public @ResponseBody ResponseEntity notify(@PathVariable long id) {
+        List<User> users = userService.getAllUsers();
+        Meetup meetup = meetupService.getMeetupById(id);
+
+        try {
+            for(User user: users){
+                emailService.sendSimpleEmail(user.getEmail(), "Напоминание о встрече",
+                        "Встреча состоится в " + meetup.getStart() + " по адресу " + meetup.getPlace()
+                );
+            }
+        } catch (MailException mailException) {
+            LOG.error("Error while sending out email..{}", mailException.getStackTrace());
+            return new ResponseEntity<>("Unable to send email", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<>("All users notified", HttpStatus.OK);
     }
 
     @GetMapping(value = "/{uuid}")
